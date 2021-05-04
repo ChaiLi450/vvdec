@@ -15,10 +15,13 @@ jobs:
         include:
           - os: ubuntu-20.04
             LIB: libvvdec.so
+            LIB_PATH: lib
           - os: macos-10.15
             LIB: libvvdec.dylib
+            LIB_PATH: lib
           - os: windows-2019
             LIB: vvdec.dll
+            LIB_PATH: bin
     steps:
     - uses: actions/checkout@v2
     - run: git fetch --prune --unshallow
@@ -44,7 +47,7 @@ jobs:
         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
       with:
         upload_url: ${{ github.event.release.upload_url }}
-        asset_path: bin/release-shared/${{matrix.LIB}}
+        asset_path: ${{matrix.LIB_PATH}}/release-shared/${{matrix.LIB}}
         asset_name: ${{matrix.LIB}}
         asset_content_type: application/library
       if: github.event_name == 'release'
