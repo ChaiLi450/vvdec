@@ -47,4 +47,4 @@ jobs:
         asset_path: bin/release-shared/${{matrix.LIB}}
         asset_name: ${{matrix.LIB}}
         asset_content_type: application/library
-      if: github.event_name == 'release' && matrix.OUTPUT_LIB != ''
+      if: github.event_name == 'release'
