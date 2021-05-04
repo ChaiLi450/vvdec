@@ -13,11 +13,15 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-16.04
-          - os: ubuntu-18.04
           - os: ubuntu-20.04
+            LIB: libvvdec.so
+            LIB_PATH: lib
           - os: macos-10.15
+            LIB: libvvdec.dylib
+            LIB_PATH: lib
           - os: windows-2019
+            LIB: vvdec.dll
+            LIB_PATH: bin
     steps:
     - uses: actions/checkout@v2
     - run: git fetch --prune --unshallow
@@ -25,15 +29,25 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release
-        make -j$(nproc)
+        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=1 ..
+        cmake --build . --config Release
       if: matrix.os != 'windows-2019'
     - name: Build Windows
       run: |
         mkdir build
         cd build
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-        cmake .. -DCMAKE_BUILD_TYPE=Release
-        msbuild vvdec.sln
+        cmake -DBUILD_SHARED_LIBS=1 -DCMAKE_BUILD_TYPE=Release ..
+        cmake --build . --config Release
       shell: cmd
       if: matrix.os == 'windows-2019'
+    - name: Upload Release
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ${{matrix.LIB_PATH}}/release-shared/${{matrix.LIB}}
+        asset_name: ${{matrix.LIB}}
+        asset_content_type: application/library
+      if: github.event_name == 'release'
